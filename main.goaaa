@@ -1,0 +1,152 @@
+/*
+package main
+
+import (
+	"fmt"
+	"html/template"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
+	"time"
+
+	user "bunker/users"
+
+	dataSource "bunker/datasource"
+
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2"
+)
+
+const (
+	MongoDBHosts = "ds046549.mlab.com:46549"
+	AuthDatabase = "bunker-dev"
+	AuthUserName = "aaronpeterson3"
+	AuthPassword = "Ethan000111"
+)
+
+var templates = template.New("").Funcs(templateMap)
+
+func main() {
+
+	timer1 := time.Now()
+
+	mongoDBDialInfo := &mgo.DialInfo{
+		Addrs:    []string{MongoDBHosts},
+		Timeout:  60 * time.Second,
+		Database: AuthDatabase,
+		Username: AuthUserName,
+		Password: AuthPassword,
+	}
+
+	session, err := mgo.DialWithInfo(mongoDBDialInfo)
+	if err != nil {
+		log.Fatalf("CreateSession: %s\n", err)
+	}
+
+	defer session.Close()
+
+	dataSource.Init("bunker-dev", session)
+
+	session.SetMode(mgo.Monotonic, true)
+	buildInfo, error := session.BuildInfo()
+	if error != nil {
+		fmt.Println("Error getting session build info")
+	}
+
+	fmt.Println(buildInfo.Version)
+
+	users := new([]user.User)
+	dataSource.AllUsers(users)
+	r := mux.NewRouter()
+	r.HandleFunc("/login/", loginHandler)
+
+	//r.HandleFunc("/dashboard/", user.AllUsers(session))
+	http.Handle("/", r)
+	fmt.Println("Service Started")
+	fmt.Println(time.Since(timer1))
+	listenError := http.ListenAndServe(":5050", nil) //set listen port
+
+	if listenError != nil {
+		log.Fatal("ListenAndServe : ", err)
+	}
+
+}
+
+func dashboardHandler(s *mgo.Session) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.ParseForm()
+		fmt.Println("Entered dashboard")
+		fmt.Println(r.Method)
+
+		//renderTemplate(w, "html\\dashboard.html", nil)
+		//t := template.Must(template.ParseFiles("./html/templates/header.html", "./html/templates/footer.html", "./html/dashboard.html"))
+		//t.ExecuteTemplate(w, "html\dashboard.html", nil)
+	}
+}
+
+func loginHandler(w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+	fmt.Println("Entered Login Page")
+	fmt.Println(r.Method)
+
+	for k, v := range r.Form {
+		fmt.Println("key:", k)
+		fmt.Println("val:", strings.Join(v, ""))
+	}
+	if r.Method == "GET" {
+		// return page
+		t, _ := template.ParseFiles("./html/login.html")
+		t.Execute(w, nil)
+	} else if r.Method == "POST" {
+		// attempt to login user
+		fmt.Println("In POST")
+		//direct to dashboard
+		http.Redirect(w, r, "/dashboard/", http.StatusMovedPermanently)
+	} else {
+
+	}
+
+}
+
+func visit(path string, f os.FileInfo, err error) error {
+	fmt.Println("Visited: " + path)
+	if !f.IsDir() && strings.Contains(f.Name(), ".html") {
+
+		pageCode, _ := ioutil.ReadFile(path)
+		templates.New(path).Parse(string(pageCode))
+	}
+
+	return nil
+}
+
+func renderTemplate(w http.ResponseWriter, tmpl string, p interface{}) {
+	err := templates.ExecuteTemplate(w, tmpl, p)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func init() {
+
+	filepath.Walk("./", visit)
+
+	/*
+		files, _ := ioutil.ReadDir("./html")
+		for _, f := range files {
+			if !f.IsDir() && strings.Contains(f.Name(), ".html") {
+				fmt.Println(f.Name())
+				f.Sys.
+			}
+
+		}
+
+		for _, path := range AssetNames() {
+			bytes, err := Asset(path)
+			if err != nil {
+				log.Panicf("Unable to parse: path=%s, err=%s", path, err)
+			}
+			templates.New(path).Parse(string(bytes))
+		}*/
