@@ -60,7 +60,7 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 var CheckTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 	token := r.Header.Get("Authorization")
 	fmt.Println(token)
-	//security.ValidateToken
+	security.ValidateToken(token)
 })
 
 var StatusHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
