@@ -26,6 +26,9 @@ const PartCollection string = "Parts"
 // MachineCollection - string to store the name of the machines collection
 const MachineCollection string = "Machines"
 
+// TokenCollection - string to store te name of the token collection
+const TokenCollection string = "Tokens"
+
 var mainSession mgo.Session
 
 //GetDBSession - Get a new copied session to the database

@@ -91,3 +91,12 @@ type Role struct {
 	IsActive    bool          `bson:"isActive"`
 	Name        string        `bson:"name"`
 }
+
+// Token - represents the structure of a user token
+type Token struct {
+	UserID    string  `bson:"userID"`
+	CompanyID string  `bson:"companyID"`
+	Token     string  `bson:"token"`
+	IssuedAt  float64 `bson:"issuedAt"`
+	ExpiresAt float64 `bson:"expiresAt"`
+}

@@ -2,18 +2,15 @@ package security
 
 import (
 	"errors"
-	"strconv"
 	"time"
 
 	models "bunker/models"
-
-	"fmt"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	jwt "github.com/dgrijalva/jwt-go"
 )
 
-var ourLittleSecret = []byte("d0uble-d@re")
+var ourLittleSecret = []byte("trIplE-d0g-d@re-y0U")
 
 var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 	ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
@@ -23,50 +20,58 @@ var jwtMiddleware = jwtmiddleware.New(jwtmiddleware.Options{
 })
 
 // GetToken - Get a token
-func GetToken(user *models.User) string {
+func GetToken(user *models.User, expiresAt float64, issuedAt float64) string {
 	// Check userName and password
 
 	claims := make(jwt.MapClaims)
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
-	claims["iat"] = time.Now().Unix()
-	claims["username"] = user.Username
+	claims["exp"] = expiresAt
+	claims["iat"] = issuedAt
+	claims["userID"] = user.ID.String()
 	claims["companyID"] = user.CompanyID.String()
-	claims["roles"] = user.Roles
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	createdToken, _ := token.SignedString([]byte(ourLittleSecret))
-	//	fmt.Println("Token:" + createdToken)
+
 	return createdToken
 }
 
-func ValidateToken(tokenString string) (bool, error) {
+// ValidateToken - Check the validity of a token
+func ValidateToken(tokenString string) (models.Token, error) {
 
-	token, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
+	token := new(models.Token)
+	tok, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		return ourLittleSecret, nil
 	})
 
 	if err != nil {
-		return false, err
-	}
-	if !token.Valid {
-		return false, errors.New("token invalid")
+		return *token, err
 	}
 
-	err = token.Claims.Valid()
+	if !tok.Valid {
+		return *token, errors.New("token invalid")
+	}
+
+	err = tok.Claims.Valid()
 
 	if err != nil {
-		return false, errors.New("token time invalid")
+		return *token, errors.New("token time invalid")
 	}
 
-	expiresAt := token.Claims.(jwt.MapClaims)["exp"].(float64)
-	issuedAt := token.Claims.(jwt.MapClaims)["iat"].(float64)
-	companyID := token.Claims.(jwt.MapClaims)["companyID"].(string)
-	username := token.Claims.(jwt.MapClaims)["username"].(string)
+	token.ExpiresAt = tok.Claims.(jwt.MapClaims)["exp"].(float64)
+	token.IssuedAt = tok.Claims.(jwt.MapClaims)["iat"].(float64)
+	token.CompanyID = tok.Claims.(jwt.MapClaims)["companyID"].(string)
+	token.UserID = tok.Claims.(jwt.MapClaims)["userID"].(string)
+	token.Token = tokenString
 
-	fmt.Println("Issued At :" + strconv.FormatFloat(issuedAt, 'E', -1, 64))
-	fmt.Println("Expires At :" + strconv.FormatFloat(expiresAt, 'E', -1, 64))
-	fmt.Println("Username :" + username)
-	fmt.Println("CompanyID :" + companyID)
+	if currentTime := int(time.Now().Unix()); int(token.ExpiresAt) < currentTime {
+		return *token, errors.New("Expired token")
+	} else if int(token.IssuedAt) > currentTime {
+		return *token, errors.New("Invalid issued time")
+	} else if len(token.CompanyID) <= 10 {
+		return *token, errors.New("Missing info")
+	} else if len(token.UserID) <= 0 {
+		return *token, errors.New("Missing info")
+	}
 
-	return true, nil
+	return *token, nil
 }

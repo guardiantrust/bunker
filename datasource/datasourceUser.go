@@ -5,18 +5,17 @@ import (
 	security "bunker/security"
 	"errors"
 	"fmt"
+	"time"
 
-	"gopkg.in/mgo.v2"
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // ValidateUser - Validate a user password
-func ValidateUser(userName string, password string) (models.User, error) {
-	tempSession := GetDBSession()
-	defer CloseDBSession(tempSession)
+func ValidateUser(userName string, password string, session *mgo.Session) (models.User, error) {
 
 	user := models.User{}
-	coll := tempSession.DB(MongoDatabase).C(UserCollection)
+	coll := session.DB(MongoDatabase).C(UserCollection)
 	err := coll.Find(bson.M{"username": userName}).One(&user)
 
 	if err != nil || len(user.Username) == 0 {
@@ -60,16 +59,30 @@ func AddUser(user *models.User) error {
 }
 
 // UpdateUser - Update an existing user
-func UpdateUser(user *models.User, session *mgo.Session) {
+func UpdateUser(user *models.User) {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	coll := tempSession.DB(MongoDatabase).C(UserCollection)
+	coll.Update(bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"firstName": user.FirstName, "lastName": user.LastName, "email": user.Email, "phoneNumber": user.PhoneNumber, "roles": user.Roles, "userlevel": user.Userlevel, "SMS": user.SMS, "isActive": user.IsActive}})
+}
+
+// UpdateUserLastLogin - Resets the users last login to the time the call is made
+func UpdateUserLastLogin(user *models.User, session *mgo.Session) {
+
+	coll := session.DB(MongoDatabase).C(UserCollection)
+	coll.Update(bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"lastLogin": time.Now()}})
 
 }
 
 // GetUser - Return a user by userId
-func GetUser(userID string, session *mgo.Session) models.User {
-	returnUser := new(models.User)
+func GetUser(userID string) models.User {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	var user models.User
+	coll := tempSession.DB(MongoDatabase).C(UserCollection)
+	coll.FindId(bson.M{"_id": bson.ObjectIdHex(userID)}).One(&user)
 
-	return *returnUser
-
+	return user
 }
 
 //GetUserByUserName - return a user by username
@@ -95,6 +108,10 @@ func GetAllUsers(companyID string) []models.User {
 }
 
 // DeleteUser - Delete (inactivate) a user by userID
-func DeleteUser(userID string, session *mgo.Session) {
+func DeleteUser(userID string) {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	coll := tempSession.DB(MongoDatabase).C(UserCollection)
+	coll.Update(bson.M{"_id": userID}, bson.M{"$set": bson.M{"isActive": false}})
 
 }
