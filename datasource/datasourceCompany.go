@@ -9,7 +9,7 @@ import (
 )
 
 func AddCompany(company *models.Company) error {
-
+	
 	valid := nameAvailable(company.Name)
 
 	if !valid {

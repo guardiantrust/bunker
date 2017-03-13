@@ -2,7 +2,6 @@ package datasource
 
 import (
 	models "bunker/models"
-	"fmt"
 
 	"errors"
 	"time"
@@ -12,8 +11,9 @@ import (
 )
 
 // StoreToken - Store the new token in the db to validate later
-func StoreToken(token *models.Token, session *mgo.Session) {
-
+func StoreToken(token *models.Token) {
+	session := GetDBSession()
+	defer session.Close()
 	col := session.DB(MongoDatabase).C(TokenCollection)
 	DeleteUserToken(token.UserID, session)
 	col.Insert(&token)
@@ -26,7 +26,6 @@ func CheckToken(userID string, companyID string, token string) (bool, error) {
 
 	col := session.DB(MongoDatabase).C(TokenCollection)
 	var savedToken models.Token
-	fmt.Println(userID, " ", companyID, " ", token)
 	err := col.Find(bson.M{"userID": userID, "companyID": companyID, "token": token}).One(&savedToken)
 
 	if err != nil {

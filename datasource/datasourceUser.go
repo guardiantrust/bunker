@@ -7,15 +7,15 @@ import (
 	"fmt"
 	"time"
 
-	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
 // ValidateUser - Validate a user password
-func ValidateUser(userName string, password string, session *mgo.Session) (models.User, error) {
-
+func ValidateUser(userName string, password string) (models.User, error) {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
 	user := models.User{}
-	coll := session.DB(MongoDatabase).C(UserCollection)
+	coll := tempSession.DB(MongoDatabase).C(UserCollection)
 	err := coll.Find(bson.M{"username": userName}).One(&user)
 
 	if err != nil || len(user.Username) == 0 {
@@ -24,7 +24,6 @@ func ValidateUser(userName string, password string, session *mgo.Session) (model
 	}
 	valid := security.DecryptString([]byte(user.Password), []byte(password))
 	if valid {
-		fmt.Println("Valid Password")
 		return user, nil
 	}
 	return user, errors.New("Invalid Password")
@@ -67,9 +66,10 @@ func UpdateUser(user *models.User) {
 }
 
 // UpdateUserLastLogin - Resets the users last login to the time the call is made
-func UpdateUserLastLogin(user *models.User, session *mgo.Session) {
-
-	coll := session.DB(MongoDatabase).C(UserCollection)
+func UpdateUserLastLogin(user *models.User) {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	coll := tempSession.DB(MongoDatabase).C(UserCollection)
 	coll.Update(bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"lastLogin": time.Now()}})
 
 }

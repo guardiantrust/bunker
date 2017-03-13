@@ -47,6 +47,6 @@ var POSTUser = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	// retrieve new record
 	users := datasource.GetUserByUserName(user.Username)
 	// write response
-	response, _ := json.Marshal(&users)
-	w.Write(response)
+	
+	w.Write(res[]byte(users.ID)
 })
