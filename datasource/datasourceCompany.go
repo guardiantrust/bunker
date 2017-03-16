@@ -8,8 +8,9 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// AddCompany - Add a new company
 func AddCompany(company *models.Company) error {
-	
+
 	valid := nameAvailable(company.Name)
 
 	if !valid {
@@ -23,6 +24,29 @@ func AddCompany(company *models.Company) error {
 	return nil
 }
 
+func UpdateCompany(company *models.Company) error {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	//coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
+	//coll.UpdateId( company.ID, bson.)
+	return nil
+}
+
+// InActivateCompany - Change company activation
+func InActivateCompany(companyID string) error {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
+	err := coll.Update(bson.M{"_id": companyID}, bson.M{"$set": bson.M{"isActive": false}})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// GetCompanyByName - Get a company by company name
 func GetCompanyByName(name string) []models.Company {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
@@ -33,6 +57,7 @@ func GetCompanyByName(name string) []models.Company {
 	return companies
 }
 
+// nameAvailable - Check that a company name is not already saved
 func nameAvailable(companyName string) bool {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)

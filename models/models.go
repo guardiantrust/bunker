@@ -29,6 +29,7 @@ type Company struct {
 	ContactEmail string        `bson:"contactEmail"`
 	Created      time.Time     `bson:"created"`
 	IsSuspended  bool          `bson:"isSuspended"`
+	IsActive     bool          `bson:"isActive"`
 }
 
 type Machine struct {
@@ -75,16 +76,15 @@ type User struct {
 	Email       string        `bson:"email"`
 	PhoneNumber string        `bson:"phoneNumber"`
 	Username    string        `bson:"username"`
-	Password    string        `bson:"password"`
 	Userlevel   UserType      `bson:"userlevel"`
 	IsActive    bool          `bson:"isActive"`
 	SMS         string        `bson:"SMS"`
-	LastLogin   time.Time     `bson:"lastLogin"`
 	Created     time.Time     `bson:"created"`
 	Roles       []Role        `bson:"roles"`
 	CompanyID   bson.ObjectId `bson:"companyId"`
 }
 
+// Role - Defines a role used in the system
 type Role struct {
 	ID          bson.ObjectId `bson:"_id,omitempty"`
 	Description string        `bson:"description"`
@@ -99,4 +99,11 @@ type Token struct {
 	Token     string  `bson:"token"`
 	IssuedAt  float64 `bson:"issuedAt"`
 	ExpiresAt float64 `bson:"expiresAt"`
+}
+
+// Login - represents login credentials
+type Login struct {
+	User      `bson:",inline"`
+	Password  string    `bson:"password"`
+	LastLogin time.Time `bson:"lastLogin"`
 }

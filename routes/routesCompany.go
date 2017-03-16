@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 // POSTCompany - Add a company
@@ -54,4 +56,17 @@ var PUTCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 	//check valid object
 	//userName := req.Header.Get("username")
 
+})
+
+// DeleteCompany - Inactivates a company in the db
+var DeleteCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	variables := mux.Vars(req)
+	companyID := variables["companyID"]
+
+	err := datasource.InActivateCompany(companyID)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Bad Request"))
+	}
+	w.WriteHeader(http.StatusAccepted)
 })

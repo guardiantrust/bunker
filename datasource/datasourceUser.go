@@ -14,19 +14,22 @@ import (
 func ValidateUser(userName string, password string) (models.User, error) {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
-	user := models.User{}
-	coll := tempSession.DB(MongoDatabase).C(UserCollection)
-	err := coll.Find(bson.M{"username": userName}).One(&user)
+	loginUser := models.Login{}
 
-	if err != nil || len(user.Username) == 0 {
+	coll := tempSession.DB(MongoDatabase).C(UserCollection)
+	err := coll.Find(bson.M{"username": userName}).One(&loginUser)
+
+	if err != nil || len(loginUser.Username) == 0 {
 		fmt.Println("User Not found")
 		return models.User{}, errors.New("User Not Found")
 	}
-	valid := security.DecryptString([]byte(user.Password), []byte(password))
+	fmt.Println("UserId: " + loginUser.Password)
+	valid := security.DecryptString([]byte(loginUser.Password), []byte(password))
 	if valid {
-		return user, nil
+		return loginUser.User, nil
 	}
-	return user, errors.New("Invalid Password")
+
+	return models.User{}, errors.New("Invalid Password")
 }
 
 // usernameAvailable - Check if a username is not currently used true = available, false = already taken
@@ -41,17 +44,18 @@ func usernameAvailable(userName string) bool {
 }
 
 // AddUser - Add a new user
-func AddUser(user *models.User) error {
+func AddUser(user *models.Login) error {
 	if !usernameAvailable(user.Username) {
 		return errors.New("Username already taken")
 	}
 
 	encryptedPassword, _ := security.EncryptString([]byte(user.Password))
-
-	user.Password = encryptedPassword
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
 	coll := tempSession.DB(MongoDatabase).C(UserCollection)
+
+	user.Password = encryptedPassword
+	user.Created = time.Now()
 	coll.Insert(&user)
 	fmt.Println(user)
 	return nil
@@ -75,14 +79,19 @@ func UpdateUserLastLogin(user *models.User) {
 }
 
 // GetUser - Return a user by userId
-func GetUser(userID string) models.User {
+func GetUser(userID bson.ObjectId) (models.User, error) {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
 	var user models.User
 	coll := tempSession.DB(MongoDatabase).C(UserCollection)
-	coll.FindId(bson.M{"_id": bson.ObjectIdHex(userID)}).One(&user)
 
-	return user
+	fmt.Println(userID)
+	err := coll.FindId(userID).One(&user)
+	if err != nil {
+		fmt.Println("Not found!")
+	}
+
+	return user, err
 }
 
 //GetUserByUserName - return a user by username
