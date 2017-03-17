@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const mongoAddress string = "ds046549.mlab.com:46549"
@@ -36,14 +37,7 @@ func GetDBSession() *mgo.Session {
 	return mainSession.Copy()
 }
 
-//CloseDBSession - Close the copied Database session
-func CloseDBSession(copiedSession *mgo.Session) {
-	copiedSession.Close()
-}
-
-// ConnectDatabase - Make base connection to database
-func ConnectDatabase() {
-
+func GetNewSession() *mgo.Session {
 	//Setup Mongodb connection
 	dialerInfo := &mgo.DialInfo{
 		Addrs:    []string{mongoAddress},
@@ -54,6 +48,7 @@ func ConnectDatabase() {
 
 	//Get Mongodb session
 	mongoSession, err := mgo.DialWithInfo(dialerInfo)
+	defer mongoSession.Close()
 
 	if err != nil {
 		fmt.Println("Error creating db session: ")
@@ -62,8 +57,27 @@ func ConnectDatabase() {
 	//Set session mode
 	mongoSession.SetMode(mgo.Monotonic, true)
 
-	mainSession = *mongoSession.Copy()
-	defer mongoSession.Close()
+	return mongoSession
+}
+
+//CloseDBSession - Close the copied Database session
+func CloseDBSession(copiedSession *mgo.Session) {
+	copiedSession.Close()
+}
+
+// IDToObjectID - turns the string id to an objectId
+func IDToObjectID(id string) bson.ObjectId {
+	return bson.ObjectIdHex(id)
+}
+
+// ObjectIDToID - turns an objectid to a string
+func ObjectIDToID(id bson.ObjectId) string {
+	return id.Hex()
+}
+
+// ConnectDatabase - Make base connection to database
+func ConnectDatabase() {
+	mainSession = *GetNewSession()
 }
 
 //DisconnectDatabase - Disconnect from database

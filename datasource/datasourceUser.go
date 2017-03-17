@@ -20,11 +20,16 @@ func ValidateUser(userName string, password string) (models.User, error) {
 	err := coll.Find(bson.M{"username": userName}).One(&loginUser)
 
 	if err != nil || len(loginUser.Username) == 0 {
-		fmt.Println("User Not found")
+
 		return models.User{}, errors.New("User Not Found")
 	}
-	fmt.Println("UserId: " + loginUser.Password)
+
+	if !loginUser.IsActive {
+		return models.User{}, errors.New("User not active")
+	}
+
 	valid := security.DecryptString([]byte(loginUser.Password), []byte(password))
+
 	if valid {
 		return loginUser.User, nil
 	}
@@ -62,11 +67,13 @@ func AddUser(user *models.Login) error {
 }
 
 // UpdateUser - Update an existing user
-func UpdateUser(user *models.User) {
+func UpdateUser(user *models.User) error {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
 	coll := tempSession.DB(MongoDatabase).C(UserCollection)
-	coll.Update(bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"firstName": user.FirstName, "lastName": user.LastName, "email": user.Email, "phoneNumber": user.PhoneNumber, "roles": user.Roles, "userlevel": user.Userlevel, "SMS": user.SMS, "isActive": user.IsActive}})
+	err := coll.Update(bson.M{"_id": user.ID}, bson.M{"$set": bson.M{"firstName": user.FirstName, "lastName": user.LastName, "email": user.Email, "phoneNumber": user.PhoneNumber, "roles": user.Roles, "userlevel": user.Userlevel, "SMS": user.SMS, "isActive": user.IsActive}})
+
+	return err
 }
 
 // UpdateUserLastLogin - Resets the users last login to the time the call is made
@@ -123,4 +130,15 @@ func DeleteUser(userID string) {
 	coll := tempSession.DB(MongoDatabase).C(UserCollection)
 	coll.Update(bson.M{"_id": userID}, bson.M{"$set": bson.M{"isActive": false}})
 
+}
+
+// UpdatePassword - Update the password of a user
+func UpdatePassword(userID string, password string) error {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	coll := tempSession.DB(MongoDatabase).C(UserCollection)
+	encryptedPassword, _ := security.EncryptString([]byte(password))
+	err := coll.Update(bson.M{"_id": userID}, bson.M{"$set": bson.M{"password": encryptedPassword}})
+
+	return err
 }

@@ -5,7 +5,10 @@ import (
 	"bunker/models"
 	"bunker/security"
 	"net/http"
-	"strings"
+<<<<<<< HEAD
+=======
+
+>>>>>>> efc31b0cb864fe5b63c483f860521495def4bfa9
 	"sync"
 	"time"
 )
@@ -54,7 +57,7 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 // CheckTokenHandler - Check the if a token is valid
 var CheckTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-	validToken, err := security.ValidateToken(strings.Replace(r.Header.Get("Authorization"), "bearer ", "", -1))
+	validToken, err := security.ValidateToken(r)
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

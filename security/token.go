@@ -2,6 +2,8 @@ package security
 
 import (
 	"errors"
+	"net/http"
+	"strings"
 	"time"
 
 	models "bunker/models"
@@ -36,8 +38,8 @@ func GetToken(user *models.User, expiresAt float64, issuedAt float64) string {
 }
 
 // ValidateToken - Check the validity of a token
-func ValidateToken(tokenString string) (models.Token, error) {
-
+func ValidateToken(request *http.Request) (models.Token, error) {
+	tokenString := strings.Replace(request.Header.Get("Authorization"), "bearer ", "", -1)
 	token := new(models.Token)
 	tok, err := jwt.Parse(tokenString, func(t *jwt.Token) (interface{}, error) {
 		return ourLittleSecret, nil
