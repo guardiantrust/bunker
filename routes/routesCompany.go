@@ -3,6 +3,7 @@ package routes
 import (
 	datasource "bunker/datasource"
 	models "bunker/models"
+	security "bunker/security"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -10,6 +11,35 @@ import (
 
 	"github.com/gorilla/mux"
 )
+
+// GETCompany - Get a company
+var GETCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	companyID := vars["companyID"]
+
+	loggedInUser, _ := security.ValidateToken(req)
+	if loggedInUser.CompanyID != companyID {
+		// check if user is admin
+		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+
+		if user.Userlevel != models.Admin {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Unauthorized"))
+			return
+		}
+	}
+
+	company, err := datasource.GetCompany(companyID)
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Company not found"))
+		return
+	}
+	response, _ := json.Marshal(&company)
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+})
 
 // POSTCompany - Add a company
 var POSTCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {

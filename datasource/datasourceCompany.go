@@ -24,12 +24,14 @@ func AddCompany(company *models.Company) error {
 	return nil
 }
 
+// UpdateCompany - Update a company profile
 func UpdateCompany(company *models.Company) error {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
-	//coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
-	//coll.UpdateId( company.ID, bson.)
-	return nil
+	coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
+	err := coll.Update(bson.M{"_id": company.ID}, bson.M{"$set": bson.M{"name": company.Name, "address1": company.Address1, "address2": company.Address2, "city": company.City, "state": company.State, "postal": company.Postal, "phoneNumber": company.PhoneNumber, "contactEmail": company.ContactEmail, "isSuspended": company.IsSuspended, "isActive": company.IsActive}})
+
+	return err
 }
 
 // InActivateCompany - Change company activation
@@ -55,6 +57,17 @@ func GetCompanyByName(name string) []models.Company {
 	coll.Find(bson.M{"name": name}).All(&companies)
 
 	return companies
+}
+
+// GetCompany - return a company by Id
+func GetCompany(companyID string) (models.Company, error) {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
+	var company models.Company
+	err := coll.Find(bson.M{"_id": IDToObjectID(companyID)}).One(&company)
+
+	return company, err
 }
 
 // nameAvailable - Check that a company name is not already saved

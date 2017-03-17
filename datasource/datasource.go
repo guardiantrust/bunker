@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 const mongoAddress string = "ds046549.mlab.com:46549"
@@ -39,6 +40,16 @@ func GetDBSession() *mgo.Session {
 //CloseDBSession - Close the copied Database session
 func CloseDBSession(copiedSession *mgo.Session) {
 	copiedSession.Close()
+}
+
+// IDToObjectID - turns the string id to an objectId
+func IDToObjectID(id string) bson.ObjectId {
+	return bson.ObjectIdHex(id)
+}
+
+// ObjectIDToID - turns an objectid to a string
+func ObjectIDToID(id bson.ObjectId) string {
+	return id.Hex()
 }
 
 // ConnectDatabase - Make base connection to database
