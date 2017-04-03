@@ -26,6 +26,7 @@ func SetupRoutes() {
 	router.Handle("/api/v1/companies/{companyID}", AuthorizedHandler(GETCompany)).Methods("PUT")
 	router.Handle("/api/v1/companies/", AuthorizedHandler(POSTCompany)).Methods("POST")
 	router.Handle("/api/companies/{companyID}/users", AuthorizedHandler(GETAllUsers)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/parts", AuthorizedHandler(GetPartsByCompany)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyID}/users", AuthorizedHandler(POSTUser)).Methods("POST")
 	router.Handle("/api/v1/companies/{companyID}/batches", AuthorizedHandler(GETCompanyBatches)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyId}/batches", AuthorizedHandler(POSTBatch)).Methods("POST")
@@ -37,10 +38,11 @@ func SetupRoutes() {
 	router.Handle("/api/v1/companies/{companyId}/machines/{machineID}", NotImplemented).Methods("PUT")
 	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}", NotImplemented).Methods("DELETE")
 	router.Handle("/api/v1/companies/{companyID}/machines", NotImplemented).Methods("GET")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts", NotImplemented).Methods("GET")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partID}", NotImplemented).Methods("GET")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partId}/process", NotImplemented).Methods("POST")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/barcodes/{barcode}", NotImplemented).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts", AuthorizedHandler(GetPartsByMachine)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partID}", AuthorizedHandler(GetPartById)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partId}/process", AuthorizedHandler(ProcessParts)).Methods("POST")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/barcodes/{barcode}", AuthorizedHandler(GetBarcodePart)).Methods("GET")
+
 }
 
 // Listen Listen on port
