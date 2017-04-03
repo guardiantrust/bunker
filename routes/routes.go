@@ -27,11 +27,20 @@ func SetupRoutes() {
 	router.Handle("/api/v1/companies/", AuthorizedHandler(POSTCompany)).Methods("POST")
 	router.Handle("/api/companies/{companyID}/users", AuthorizedHandler(GETAllUsers)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyID}/users", AuthorizedHandler(POSTUser)).Methods("POST")
-	router.Handle("/api/v1/companies/{companyID}/batches", NotImplemented).Methods("GET", "POST")
-	router.Handle("/api/v1/companies/{companyID}/batches/{batchId}", NotImplemented).Methods("GET", "DELETE", "PUT")
+	router.Handle("/api/v1/companies/{companyID}/batches", AuthorizedHandler(GETCompanyBatches)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyId}/batches", AuthorizedHandler(POSTBatch)).Methods("POST")
+	router.Handle("/api/v1/companies/{companyID}/batches/{batchId}", AuthorizedHandler(GETBatch)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/batches", AuthorizedHandler(PUTBatch)).Methods("PUT")
+	router.Handle("/api/v1/companies/{companyID}/batches/{batchID}", AuthorizedHandler(DELETEBatch)).Methods("DELETE")
 	router.Handle("/api/v1/companies/{companyID}/machines", NotImplemented).Methods("GET", "POST")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineId}", NotImplemented).Methods("GET", "PUT", "DELETE")
-
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}", NotImplemented).Methods("GET")
+	router.Handle("/api/v1/companies/{companyId}/machines/{machineID}", NotImplemented).Methods("PUT")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}", NotImplemented).Methods("DELETE")
+	router.Handle("/api/v1/companies/{companyID}/machines", NotImplemented).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts", NotImplemented).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partID}", NotImplemented).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partId}/process", NotImplemented).Methods("POST")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/barcodes/{barcode}", NotImplemented).Methods("GET")
 }
 
 // Listen Listen on port

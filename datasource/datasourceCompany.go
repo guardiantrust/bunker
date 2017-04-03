@@ -25,11 +25,11 @@ func AddCompany(company *models.Company) error {
 }
 
 // UpdateCompany - Update a company profile
-func UpdateCompany(company *models.Company) error {
+func UpdateCompany(companyID string, company *models.Company) error {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
 	coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
-	err := coll.Update(bson.M{"_id": company.ID}, bson.M{"$set": bson.M{"name": company.Name, "address1": company.Address1, "address2": company.Address2, "city": company.City, "state": company.State, "postal": company.Postal, "phoneNumber": company.PhoneNumber, "contactEmail": company.ContactEmail, "isSuspended": company.IsSuspended, "isActive": company.IsActive}})
+	err := coll.Update(bson.M{"_id": companyID}, bson.M{"$set": bson.M{"name": company.Name, "address1": company.Address1, "address2": company.Address2, "city": company.City, "state": company.State, "postal": company.Postal, "phoneNumber": company.PhoneNumber, "contactEmail": company.ContactEmail, "isSuspended": company.IsSuspended, "isActive": company.IsActive}})
 
 	return err
 }

@@ -6,6 +6,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// UserType - value to store the security of the user
 type UserType uint8
 
 const (
@@ -17,6 +18,7 @@ const (
 	Maintenance = 6
 )
 
+// Company - Model for a Company
 type Company struct {
 	ID           bson.ObjectId `bson:"_id,omitempty"`
 	Name         string        `bson:"name"`
@@ -32,43 +34,49 @@ type Company struct {
 	IsActive     bool          `bson:"isActive"`
 }
 
+// Machine - Model for a Machine
 type Machine struct {
 	ID          bson.ObjectId `bson:"_id,omitempty"`
 	IsActive    bool          `bson:"isActive"`
-	CompanyID   bson.ObjectId `bson:"companyId"`
+	CompanyID   bson.ObjectId `bson:"companyID"`
 	Name        string        `bson:"name"`
 	Description string        `bson:"description"`
 	Location    string        `bson:"location"`
 	Created     time.Time     `bson:"created"`
 }
 
+// Part - Document that describes a part
 type Part struct {
-	ID          bson.ObjectId    `bson:"_id,omitempty"`
-	Barcode     string           `bson:"barcode"`
-	Name        string           `bson:"name"`
-	Description string           `bson:"description"`
-	ReferenceID string           `bson:"referenceId"`
-	BatchID     bson.ObjectId    `bson:"batchId"`
-	CompanyID   bson.ObjectId    `bson:"companyId"`
-	Files       []PartFile       `bson:"files"`
-	Attributes  []PartAttributes `bson:"attributes"`
-	Created     time.Time        `bson:"created"`
+	ID          bson.ObjectId   `bson:"_id,omitempty"`
+	Barcode     string          `bson:"barcode"`
+	Name        string          `bson:"name"`
+	Description string          `bson:"description"`
+	ReferenceID string          `bson:"referenceID"`
+	BatchID     bson.ObjectId   `bson:"batchId"`
+	CompanyID   bson.ObjectId   `bson:"companyID"`
+	Files       []PartFile      `bson:"files"`
+	Attributes  []PartAttribute `bson:"attributes"`
+	Created     time.Time       `bson:"created"`
 }
 
+// PartFile - File info for the Part for a Machine
 type PartFile struct {
-	MachineID     bson.ObjectId `bson:"machineId"`
-	SystemID      string        `bson:"systemId"`
+	MachineID     bson.ObjectId `bson:"MachineID"`
+	FileID        bson.ObjectId `bson:"fileID"`
 	FileExtension string        `bson:"extension"`
 	FileName      string        `bson:"fileName"`
 	Created       time.Time     `bson:"created"`
+	Processed     time.Time     `bson:"processed"`
 }
 
-type PartAttributes struct {
+// PartAttribute - Attrbutes that can be assigned to a part
+type PartAttribute struct {
 	Name     string `bson:"name"`
 	Value    string `bson:"value"`
 	MappedTo string `bson:"mappedTo"`
 }
 
+// User - this represents a user in the system
 type User struct {
 	ID          bson.ObjectId `bson:"_id,omitempty"`
 	FirstName   string        `bson:"firstName"`
@@ -81,7 +89,7 @@ type User struct {
 	SMS         string        `bson:"SMS"`
 	Created     time.Time     `bson:"created"`
 	Roles       []Role        `bson:"roles"`
-	CompanyID   bson.ObjectId `bson:"companyId"`
+	CompanyID   bson.ObjectId `bson:"CompanyID"`
 }
 
 // Role - Defines a role used in the system
@@ -106,4 +114,20 @@ type Login struct {
 	User      `bson:",inline"`
 	Password  string    `bson:"password"`
 	LastLogin time.Time `bson:"lastLogin"`
+}
+
+// Batch - represents a batch of parts
+type Batch struct {
+	BatchID     bson.ObjectId    `bson:"_id,omitempty"`
+	CompanyID   bson.ObjectId    `bson:"companyID"`
+	Name        string           `bson:"name"`
+	Description string           `bson:"description"`
+	Created     time.Time        `bson:"created"`
+	Attributes  []BatchAttribute `bson:"attributes"`
+}
+
+// BatchAttribute - represents an attribute that can be appended to a Batch
+type BatchAttribute struct {
+	Name  string `bson:"name"`
+	Value string `bson:"value"`
 }

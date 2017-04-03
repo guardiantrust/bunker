@@ -37,6 +37,29 @@ func GetDBSession() *mgo.Session {
 	return mainSession.Copy()
 }
 
+func GetNewSession() *mgo.Session {
+	//Setup Mongodb connection
+	dialerInfo := &mgo.DialInfo{
+		Addrs:    []string{mongoAddress},
+		Database: MongoDatabase,
+		Username: mongoUser,
+		Password: mongoPassword,
+	}
+
+	//Get Mongodb session
+	mongoSession, err := mgo.DialWithInfo(dialerInfo)
+	defer mongoSession.Close()
+
+	if err != nil {
+		fmt.Println("Error creating db session: ")
+	}
+
+	//Set session mode
+	mongoSession.SetMode(mgo.Monotonic, true)
+
+	return mongoSession
+}
+
 //CloseDBSession - Close the copied Database session
 func CloseDBSession(copiedSession *mgo.Session) {
 	copiedSession.Close()
@@ -54,27 +77,7 @@ func ObjectIDToID(id bson.ObjectId) string {
 
 // ConnectDatabase - Make base connection to database
 func ConnectDatabase() {
-
-	//Setup Mongodb connection
-	dialerInfo := &mgo.DialInfo{
-		Addrs:    []string{mongoAddress},
-		Database: MongoDatabase,
-		Username: mongoUser,
-		Password: mongoPassword,
-	}
-
-	//Get Mongodb session
-	mongoSession, err := mgo.DialWithInfo(dialerInfo)
-
-	if err != nil {
-		fmt.Println("Error creating db session: ")
-	}
-
-	//Set session mode
-	mongoSession.SetMode(mgo.Monotonic, true)
-
-	mainSession = *mongoSession.Copy()
-	defer mongoSession.Close()
+	mainSession = *GetNewSession()
 }
 
 //DisconnectDatabase - Disconnect from database
