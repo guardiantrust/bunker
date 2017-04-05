@@ -5,10 +5,6 @@ import (
 	"bunker/models"
 	"bunker/security"
 	"net/http"
-<<<<<<< HEAD
-=======
-
->>>>>>> efc31b0cb864fe5b63c483f860521495def4bfa9
 	"sync"
 	"time"
 )
