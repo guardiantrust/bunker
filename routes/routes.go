@@ -33,16 +33,17 @@ func SetupRoutes() {
 	router.Handle("/api/v1/companies/{companyID}/batches/{batchId}", AuthorizedHandler(GETBatch)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyID}/batches", AuthorizedHandler(PUTBatch)).Methods("PUT")
 	router.Handle("/api/v1/companies/{companyID}/batches/{batchID}", AuthorizedHandler(DELETEBatch)).Methods("DELETE")
-	router.Handle("/api/v1/companies/{companyID}/machines", NotImplemented).Methods("GET", "POST")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}", NotImplemented).Methods("GET")
-	router.Handle("/api/v1/companies/{companyId}/machines/{machineID}", NotImplemented).Methods("PUT")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}", NotImplemented).Methods("DELETE")
-	router.Handle("/api/v1/companies/{companyID}/machines", NotImplemented).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines", AuthorizedHandler(GetMachineByCompany)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/machines", AuthorizedHandler(UpdateMachine)).Methods("POST")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}", AuthorizedHandler(GETMachine)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyId}/machines/{machineID}", AuthorizedHandler(UpdateMachine)).Methods("PUT")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}", AuthorizedHandler(InactivateMachine)).Methods("DELETE")
+	router.Handle("/api/v1/companies/{companyID}/machines", AuthorizedHandler(GetMachineByCompany)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts", AuthorizedHandler(GetPartsByMachine)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partID}", AuthorizedHandler(GetPartById)).Methods("GET")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partId}/process", AuthorizedHandler(ProcessParts)).Methods("POST")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partId}/process/{fileID}", AuthorizedHandler(ProcessParts)).Methods("POST")
 	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/barcodes/{barcode}", AuthorizedHandler(GetBarcodePart)).Methods("GET")
-
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/files/{fileID}", NotImplemented).Methods("POST")
 }
 
 // Listen Listen on port

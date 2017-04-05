@@ -65,7 +65,7 @@ var AddParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 // ProcessParts - Save the time the part was processed
 var ProcessParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	partFileID := vars["partFileID"]
+	partFileID := vars["fileID"]
 	partID := vars["partID"]
 	companyID := vars["companyID"]
 
