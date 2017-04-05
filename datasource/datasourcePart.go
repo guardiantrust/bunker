@@ -144,26 +144,23 @@ func deletePartFile(partID string) error {
 }
 
 // GetPartFile - return a file by fileId
-func GetPartFile(fileID string) ([]byte, error) {
+func GetPartFile(fileID string) ([]byte, models.PartFile, error) {
 	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
 	db := tempSession.DB(MongoDatabase)
 	file, _ := db.GridFS("fs").OpenId(IDToObjectID(fileID))
 	var fileSize int
 	fileSize = int(file.Size())
 	returnFile := make([]byte, fileSize)
-	n, err := file.Read(returnFile)
-
-	if err != nil {
-		return returnFile, err
-	}
-
-	if n != fileSize {
-
-	}
+	_, err := file.Read(returnFile)
 
 	file.Close()
-	defer CloseDBSession(tempSession)
-	return returnFile, err
+	coll := tempSession.DB(MongoDatabase).C(PartCollection)
+
+	var partFile models.PartFile
+	err = coll.Find(bson.M{"fileID": fileID}).One(&partFile)
+
+	return returnFile, partFile, err
 }
 
 // SavePartFile - Save a PartFile to the db

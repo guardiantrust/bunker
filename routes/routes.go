@@ -43,7 +43,7 @@ func SetupRoutes() {
 	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partID}", AuthorizedHandler(GetPartById)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/{partId}/process/{fileID}", AuthorizedHandler(ProcessParts)).Methods("POST")
 	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/barcodes/{barcode}", AuthorizedHandler(GetBarcodePart)).Methods("GET")
-	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/files/{fileID}", NotImplemented).Methods("POST")
+	router.Handle("/api/v1/companies/{companyID}/machines/{machineID}/parts/files/{fileID}", AuthorizedHandler(GetPartFile)).Methods("POST")
 }
 
 // Listen Listen on port

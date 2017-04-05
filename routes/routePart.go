@@ -4,9 +4,14 @@ import (
 	"bunker/datasource"
 	"bunker/models"
 	"bunker/security"
+	"encoding/binary"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
+	"strconv"
+
+	"bytes"
 
 	"github.com/gorilla/mux"
 )
@@ -268,4 +273,37 @@ var GetPartsByCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.R
 
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(response))
+})
+
+var GetPartFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	fileID := vars["fileID"]
+	companyID := vars["companyID"]
+
+	file, partFile, err := datasource.GetPartFile(fileID)
+
+	if err != nil {
+		// file not found
+	}
+
+	var contentType = ""
+	if len(file) <= 512 {
+		contentType = http.DetectContentType(file)
+	} else {
+		fileHeader := make([]byte, 512)
+		for i := range fileHeader {
+			fileHeader[i] = file[i]
+		}
+		contentType = http.DetectContentType(fileHeader)
+	}
+
+	fileSize := strconv.FormatInt(int64(binary.Size(file)), 10)
+	//Send the headers
+	w.Header().Set("Content-Disposition", "attachment; filename="+partFile.FileName+"."+partFile.FileExtension)
+	w.Header().Set("Content-Type", contentType)
+	w.Header().Set("Content-Length", fileSize)
+	sendFile := bytes.NewReader(file)
+	//Send the file
+	io.Copy(w, sendFile) //'Copy' the file to the client
+
 })
