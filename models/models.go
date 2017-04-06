@@ -47,16 +47,16 @@ type Machine struct {
 
 // Part - Document that describes a part
 type Part struct {
-	ID          bson.ObjectId   `bson:"_id,omitempty"`
-	Barcode     string          `bson:"barcode"`
-	Name        string          `bson:"name"`
-	Description string          `bson:"description"`
-	ReferenceID string          `bson:"referenceID"`
-	BatchID     bson.ObjectId   `bson:"batchId"`
-	CompanyID   bson.ObjectId   `bson:"companyID"`
-	Files       []PartFile      `bson:"files"`
-	Attributes  []PartAttribute `bson:"attributes"`
-	Created     time.Time       `bson:"created"`
+	ID          bson.ObjectId    `bson:"_id,omitempty"`
+	Barcode     string           `bson:"barcode"`
+	Name        string           `bson:"name"`
+	Description string           `bson:"description"`
+	ReferenceID string           `bson:"referenceID"`
+	BatchID     bson.ObjectId    `bson:"batchId"`
+	CompanyID   bson.ObjectId    `bson:"companyID"`
+	Files       []*PartFile      `bson:"files"`
+	Attributes  []*PartAttribute `bson:"attributes"`
+	Created     time.Time        `bson:"created"`
 }
 
 // PartFile - File info for the Part for a Machine

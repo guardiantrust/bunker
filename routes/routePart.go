@@ -44,11 +44,7 @@ var AddParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	var newPart models.Part
 	err = json.Unmarshal(body, &newPart)
 
-	for _, f := range newPart.Files {
-		f.ID = bson.NewObjectId()
-		fmt.Println(f.ID.Hex())
-		f.Created = time.Now()
-	}
+	
 
 	if err != nil {
 		panic(err)

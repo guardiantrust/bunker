@@ -4,6 +4,7 @@ import (
 	"bufio"
 	models "bunker/models"
 	"errors"
+	"fmt"
 	"io"
 	multipart "mime/multipart"
 	"time"
@@ -76,6 +77,11 @@ func AddPart(part *models.Part) error {
 		part.BatchID = bson.NewObjectId()
 	}
 
+	for _, f := range part.Files {
+		f.ID = bson.NewObjectId()
+		fmt.Println(f.ID.Hex())
+		f.Created = time.Now()
+	}
 	coll := tempSession.DB(MongoDatabase).C(PartCollection)
 	err := coll.Insert(part)
 	return err
