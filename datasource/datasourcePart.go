@@ -76,11 +76,6 @@ func AddPart(part *models.Part) error {
 		part.BatchID = bson.NewObjectId()
 	}
 
-	for _, f := range part.Files {
-		f.FileID = bson.NewObjectId()
-		f.Created = time.Now()
-	}
-
 	coll := tempSession.DB(MongoDatabase).C(PartCollection)
 	err := coll.Insert(part)
 	return err
@@ -140,7 +135,7 @@ func deletePartFile(partID string) error {
 	part, err := GETPart(partID)
 
 	for _, f := range part.Files {
-		gridFS.RemoveId(f.FileID)
+		gridFS.RemoveId(f.ID)
 	}
 
 	return err

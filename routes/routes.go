@@ -27,6 +27,8 @@ func SetupRoutes() {
 	router.Handle("/api/v1/companies/", AuthorizedHandler(POSTCompany)).Methods("POST")
 	router.Handle("/api/companies/{companyID}/users", AuthorizedHandler(GETAllUsers)).Methods("GET")
 	router.Handle("/api/v1/companies/{companyID}/parts", AuthorizedHandler(GetPartsByCompany)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/parts/{partID}", AuthorizedHandler(GetPartById)).Methods("GET")
+	router.Handle("/api/v1/companies/{companyID}/parts/{partID}", AuthorizedHandler(UpdatePart)).Methods("PUT")
 	router.Handle("/api/v1/companies/{companyID}/parts", AuthorizedHandler(AddParts)).Methods("POST")
 	router.Handle("/api/v1/companies/{companyID}/users", AuthorizedHandler(POSTUser)).Methods("POST")
 	router.Handle("/api/v1/companies/{companyID}/batches", AuthorizedHandler(GETCompanyBatches)).Methods("GET")

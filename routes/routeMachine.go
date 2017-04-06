@@ -5,6 +5,7 @@ import (
 	"bunker/models"
 	"bunker/security"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -15,7 +16,7 @@ var GETMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 	vars := mux.Vars(req)
 	companyID := vars["companyID"]
 	machineID := vars["machineID"]
-
+	fmt.Println("Test")
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin

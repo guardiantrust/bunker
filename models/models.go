@@ -61,8 +61,8 @@ type Part struct {
 
 // PartFile - File info for the Part for a Machine
 type PartFile struct {
+	ID            bson.ObjectId `bson:"_id,omitempty"`
 	MachineID     bson.ObjectId `bson:"machineID"`
-	FileID        bson.ObjectId `bson:"fileID"`
 	FileExtension string        `bson:"extension"`
 	FileName      string        `bson:"fileName"`
 	Created       time.Time     `bson:"created"`

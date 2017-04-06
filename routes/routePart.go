@@ -6,10 +6,14 @@ import (
 	"bunker/security"
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+	"time"
+
+	"gopkg.in/mgo.v2/bson"
 
 	"bytes"
 
@@ -40,6 +44,12 @@ var AddParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	var newPart models.Part
 	err = json.Unmarshal(body, &newPart)
 
+	for _, f := range newPart.Files {
+		f.ID = bson.NewObjectId()
+		fmt.Println(f.ID.Hex())
+		f.Created = time.Now()
+	}
+
 	if err != nil {
 		panic(err)
 	}
@@ -55,6 +65,47 @@ var AddParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	response, _ := json.Marshal(newPart)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(response))
+})
+
+var UpdatePart = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+
+	vars := mux.Vars(req)
+	companyID := vars["companyID"]
+	partID := vars["partID"]
+
+	loggedInUser, _ := security.ValidateToken(req)
+	if loggedInUser.CompanyID != companyID {
+		// check if user is admin
+		user, _ := datasource.GetUser(loggedInUser.UserID)
+
+		if user.Userlevel != models.Admin {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Unauthorized"))
+			return
+		}
+	}
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		panic(err)
+	}
+	var newPart models.Part
+	err = json.Unmarshal(body, &newPart)
+
+	if err != nil {
+		panic(err)
+	}
+
+	// Save Part
+	err = datasource.UpdatePart(partID, &newPart)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 })
 
 // ProcessParts - Save the time the part was processed
