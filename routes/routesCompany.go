@@ -20,15 +20,14 @@ var GETCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized"))
+			w.Write([]byte("Unauthorized2"))
 			return
 		}
 	}
-
 	company, err := datasource.GetCompany(companyID)
 
 	if err != nil {
@@ -97,7 +96,7 @@ var PUTCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)

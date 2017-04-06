@@ -71,9 +71,12 @@ func AddPart(part *models.Part) error {
 	defer CloseDBSession(tempSession)
 
 	part.ID = bson.NewObjectId()
+	part.Created = time.Now()
+	if len(part.BatchID) == 0 {
+		part.BatchID = bson.NewObjectId()
+	}
 
 	for _, f := range part.Files {
-		f.ID = bson.NewObjectId()
 		f.FileID = bson.NewObjectId()
 		f.Created = time.Now()
 	}
@@ -164,25 +167,21 @@ func GetPartFile(fileID string) ([]byte, models.PartFile, error) {
 }
 
 // SavePartFile - Save a PartFile to the db
-func SavePartFile(companyID string, partID string, fileAttributes models.PartFile, file multipart.File) error {
+func SavePartFile(companyID string, fileID string, fileName string, file multipart.File) error {
 
 	tempSession := GetNewSession()
 	db := tempSession.DB(MongoDatabase)
 	defer CloseDBSession(tempSession)
-	fileAttributes.FileID = bson.NewObjectId()
-	fileAttributes.Created = time.Now()
-	gridFile, err := db.GridFS("fs").Create(fileAttributes.FileName)
+
+	gridFile, err := db.GridFS("fs").Create(fileName)
 
 	if err != nil {
 		return err
 	}
 
-	gridFile.SetId(fileAttributes.FileID)
-	gridFile.SetContentType(fileAttributes.FileExtension)
-	gridFile.SetName(fileAttributes.FileName)
-	gridFile.SetMeta(bson.M{"machineID": fileAttributes.MachineID})
+	gridFile.SetId(fileID)
+	gridFile.SetName(fileName)
 	gridFile.SetMeta(bson.M{"companyID": companyID})
-	gridFile.SetMeta(bson.M{"partID": partID})
 
 	reader := bufio.NewReader(file)
 	defer func() { file.Close() }()

@@ -34,6 +34,11 @@ var mainSession mgo.Session
 
 //GetDBSession - Get a new copied session to the database
 func GetDBSession() *mgo.Session {
+
+	if len(mainSession.LiveServers()) == 0 {
+		fmt.Println("Connecting to DB")
+		ConnectDatabase()
+	}
 	return mainSession.Copy()
 }
 
@@ -48,7 +53,6 @@ func GetNewSession() *mgo.Session {
 
 	//Get Mongodb session
 	mongoSession, err := mgo.DialWithInfo(dialerInfo)
-	defer mongoSession.Close()
 
 	if err != nil {
 		fmt.Println("Error creating db session: ")
@@ -72,15 +76,22 @@ func IDToObjectID(id string) bson.ObjectId {
 
 // ObjectIDToID - turns an objectid to a string
 func ObjectIDToID(id bson.ObjectId) string {
+	if bson.IsObjectIdHex(id.Hex()) {
+		return id.Hex()
+	}
+
 	return id.Hex()
 }
 
 // ConnectDatabase - Make base connection to database
 func ConnectDatabase() {
+	fmt.Println("Connecting DB")
 	mainSession = *GetNewSession()
 }
 
 //DisconnectDatabase - Disconnect from database
 func DisconnectDatabase() {
+	fmt.Println("Disconnecting DB")
 	mainSession.Close()
+
 }

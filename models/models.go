@@ -61,7 +61,6 @@ type Part struct {
 
 // PartFile - File info for the Part for a Machine
 type PartFile struct {
-	ID            bson.ObjectId `bson:"_id, omitempty"`
 	MachineID     bson.ObjectId `bson:"machineID"`
 	FileID        bson.ObjectId `bson:"fileID"`
 	FileExtension string        `bson:"extension"`
@@ -90,7 +89,7 @@ type User struct {
 	SMS         string        `bson:"SMS"`
 	Created     time.Time     `bson:"created"`
 	Roles       []Role        `bson:"roles"`
-	CompanyID   bson.ObjectId `bson:"CompanyID"`
+	CompanyID   bson.ObjectId `bson:"companyID"`
 }
 
 // Role - Defines a role used in the system

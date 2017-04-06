@@ -24,7 +24,7 @@ var AddParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -49,22 +49,12 @@ var AddParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
 		return
 	}
-
-	for _, fileHeaders := range req.MultipartForm.File {
-		for _, fileHeader := range fileHeaders {
-			for _, f := range newPart.Files {
-				if f.FileName == fileHeader.Filename {
-					file, _ := fileHeader.Open()
-					datasource.SavePartFile(companyID, datasource.ObjectIDToID(newPart.ID), f, file)
-				}
-			}
-		}
-
-	}
-
+	response, _ := json.Marshal(newPart)
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(response))
 })
 
 // ProcessParts - Save the time the part was processed
@@ -77,7 +67,7 @@ var ProcessParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Reques
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -106,7 +96,7 @@ var GetPartById = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -143,7 +133,7 @@ var DeletePart = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -173,7 +163,7 @@ var GetBarcodePart = http.HandlerFunc(func(w http.ResponseWriter, req *http.Requ
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -210,7 +200,7 @@ var GetPartsByMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.R
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -246,7 +236,7 @@ var GetPartsByCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.R
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -275,10 +265,22 @@ var GetPartsByCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.R
 	w.Write([]byte(response))
 })
 
-var GetPartFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+var GetFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	fileID := vars["fileID"]
 	companyID := vars["companyID"]
+
+	loggedInUser, _ := security.ValidateToken(req)
+	if loggedInUser.CompanyID != companyID {
+		// check if user is admin
+		user, _ := datasource.GetUser(loggedInUser.UserID)
+
+		if user.Userlevel != models.Admin {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Unauthorized"))
+			return
+		}
+	}
 
 	file, partFile, err := datasource.GetPartFile(fileID)
 
@@ -306,4 +308,30 @@ var GetPartFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request
 	//Send the file
 	io.Copy(w, sendFile) //'Copy' the file to the client
 
+})
+
+var AddFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+	fileID := vars["fileID"]
+	companyID := vars["companyID"]
+
+	loggedInUser, _ := security.ValidateToken(req)
+	if loggedInUser.CompanyID != companyID {
+		// check if user is admin
+		user, _ := datasource.GetUser(loggedInUser.UserID)
+
+		if user.Userlevel != models.Admin {
+			w.WriteHeader(http.StatusUnauthorized)
+			w.Write([]byte("Unauthorized"))
+			return
+		}
+	}
+
+	for _, fileHeaders := range req.MultipartForm.File {
+		for _, fileHeader := range fileHeaders {
+			file, _ := fileHeader.Open()
+			datasource.SavePartFile(companyID, fileID, fileHeader.Filename, file)
+		}
+
+	}
 })

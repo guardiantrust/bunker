@@ -17,19 +17,19 @@ var GetTokenHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Reque
 	password := r.Header.Get("password")
 
 	validUser, err := datasource.ValidateUser(userName, password)
-
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Unauthorized"))
+		w.Write([]byte("Unauthorized1"))
 		return
 	}
+
 	userToken := new(models.Token)
 
 	userToken.ExpiresAt = float64(time.Now().Add(time.Hour * 1).Unix())
 	userToken.IssuedAt = float64(time.Now().Unix())
 	userToken.Token = security.GetToken(&validUser, userToken.ExpiresAt, userToken.IssuedAt)
-	userToken.CompanyID = validUser.CompanyID.String()
-	userToken.UserID = validUser.ID.String()
+	userToken.CompanyID = validUser.CompanyID.Hex()
+	userToken.UserID = validUser.ID.Hex()
 
 	//Update the users last login
 	go func() {

@@ -65,7 +65,7 @@ func GetCompany(companyID string) (models.Company, error) {
 	defer CloseDBSession(tempSession)
 	coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
 	var company models.Company
-	err := coll.Find(bson.M{"_id": IDToObjectID(companyID)}).One(&company)
+	err := coll.FindId(IDToObjectID(companyID)).One(&company)
 
 	return company, err
 }

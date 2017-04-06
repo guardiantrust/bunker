@@ -4,7 +4,7 @@ import (
 	models "bunker/models"
 	security "bunker/security"
 	"errors"
-	"fmt"
+
 	"time"
 
 	"gopkg.in/mgo.v2/bson"
@@ -12,9 +12,11 @@ import (
 
 // ValidateUser - Validate a user password
 func ValidateUser(userName string, password string) (models.User, error) {
+
 	tempSession := GetDBSession()
+
 	defer CloseDBSession(tempSession)
-	loginUser := models.Login{}
+	var loginUser models.Login
 
 	coll := tempSession.DB(MongoDatabase).C(UserCollection)
 	err := coll.Find(bson.M{"username": userName}).One(&loginUser)
@@ -24,14 +26,17 @@ func ValidateUser(userName string, password string) (models.User, error) {
 		return models.User{}, errors.New("User Not Found")
 	}
 
-	if !loginUser.IsActive {
+	valid := security.DecryptString([]byte(loginUser.Password), []byte(password))
+
+	var user models.User
+	err = coll.FindId(loginUser.ID).One(&user)
+
+	if !user.IsActive {
 		return models.User{}, errors.New("User not active")
 	}
 
-	valid := security.DecryptString([]byte(loginUser.Password), []byte(password))
-
 	if valid {
-		return loginUser.User, nil
+		return user, err
 	}
 
 	return models.User{}, errors.New("Invalid Password")
@@ -62,7 +67,6 @@ func AddUser(user *models.Login) error {
 	user.Password = encryptedPassword
 	user.Created = time.Now()
 	coll.Insert(&user)
-	fmt.Println(user)
 	return nil
 }
 
@@ -86,16 +90,16 @@ func UpdateUserLastLogin(user *models.User) {
 }
 
 // GetUser - Return a user by userId
-func GetUser(userID bson.ObjectId) (models.User, error) {
+func GetUser(userID string) (models.User, error) {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
 	var user models.User
 	coll := tempSession.DB(MongoDatabase).C(UserCollection)
 
-	fmt.Println(userID)
-	err := coll.FindId(userID).One(&user)
+	err := coll.FindId(bson.ObjectIdHex(userID)).One(&user)
+
 	if err != nil {
-		fmt.Println("Not found!")
+
 	}
 
 	return user, err

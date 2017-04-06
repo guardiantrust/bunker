@@ -19,7 +19,7 @@ var GETMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -48,7 +48,7 @@ var GetMachineByCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -77,7 +77,7 @@ var AddMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -88,6 +88,8 @@ var AddMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 
 	// copy to model
 	var machine models.Machine
+	body, err := ioutil.ReadAll(req.Body)
+
 	err = json.Unmarshal(body, &machine)
 
 	if err != nil {
@@ -96,7 +98,7 @@ var AddMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	id, err := datasource.AddMachine(machine)
+	err = datasource.AddMachine(&machine)
 
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -104,8 +106,9 @@ var AddMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 		return
 	}
 
+	response, _ := json.Marshal(machine)
 	w.WriteHeader(http.StatusOK)
-	w.write([]byte(id))
+	w.Write([]byte(response))
 
 })
 
@@ -117,7 +120,7 @@ var InactivateMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.R
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -152,7 +155,7 @@ var UpdateMachine = http.HandlerFunc(func(w http.ResponseWriter, req *http.Reque
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)

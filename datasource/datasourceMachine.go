@@ -7,7 +7,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-func AddMachine(machine models.Machine) (string, error) {
+func AddMachine(machine *models.Machine) error {
 	tempSession := GetDBSession()
 	defer CloseDBSession(tempSession)
 
@@ -17,11 +17,7 @@ func AddMachine(machine models.Machine) (string, error) {
 	coll := tempSession.DB(MongoDatabase).C(MachineCollection)
 	err := coll.Insert(machine)
 
-	if err != nil {
-
-	}
-
-	return ObjectIDToID(machine.ID), err
+	return err
 }
 
 func GetMachineById(companyID string, machineID string) (models.Machine, error) {

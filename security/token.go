@@ -1,12 +1,11 @@
 package security
 
 import (
+	models "bunker/models"
 	"errors"
 	"net/http"
 	"strings"
 	"time"
-
-	models "bunker/models"
 
 	jwtmiddleware "github.com/auth0/go-jwt-middleware"
 	jwt "github.com/dgrijalva/jwt-go"
@@ -28,9 +27,8 @@ func GetToken(user *models.User, expiresAt float64, issuedAt float64) string {
 	claims := make(jwt.MapClaims)
 	claims["exp"] = expiresAt
 	claims["iat"] = issuedAt
-	claims["userID"] = user.ID.String()
-	claims["companyID"] = user.CompanyID.String()
-
+	claims["userID"] = user.ID.Hex()
+	claims["companyID"] = user.CompanyID.Hex()
 	token := jwt.NewWithClaims(jwt.SigningMethodHS512, claims)
 	createdToken, _ := token.SignedString([]byte(ourLittleSecret))
 

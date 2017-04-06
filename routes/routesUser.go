@@ -15,7 +15,8 @@ import (
 // GETUser - Return a User by UserId
 var GETUser = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	userID := bson.ObjectIdHex(vars["userID"])
+	userID := vars["userID"]
+	
 	if userID == "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Bad Request"))
@@ -26,7 +27,7 @@ var GETUser = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Not Found with that Id: " + userID.Hex()))
+		w.Write([]byte("Not Found with that Id: " + userID))
 		return
 	}
 

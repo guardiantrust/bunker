@@ -21,7 +21,7 @@ var GETBatch = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -50,7 +50,7 @@ var GETCompanyBatches = http.HandlerFunc(func(w http.ResponseWriter, req *http.R
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -87,7 +87,7 @@ var POSTBatch = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) 
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -144,7 +144,7 @@ var PUTBatch = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
@@ -189,7 +189,7 @@ var DELETEBatch = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request
 	loggedInUser, _ := security.ValidateToken(req)
 	if loggedInUser.CompanyID != companyID {
 		// check if user is admin
-		user, _ := datasource.GetUser(datasource.IDToObjectID(loggedInUser.UserID))
+		user, _ := datasource.GetUser(loggedInUser.UserID)
 
 		if user.Userlevel != models.Admin {
 			w.WriteHeader(http.StatusUnauthorized)
