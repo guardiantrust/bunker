@@ -4,18 +4,13 @@ import (
 	"bunker/datasource"
 	"bunker/models"
 	"bunker/security"
-	"encoding/binary"
 	"encoding/json"
-	"fmt"
+
 	"io"
 	"io/ioutil"
 	"net/http"
-	"strconv"
-	"time"
 
-	"gopkg.in/mgo.v2/bson"
-
-	"bytes"
+	"fmt"
 
 	"github.com/gorilla/mux"
 )
@@ -43,8 +38,6 @@ var AddParts = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	}
 	var newPart models.Part
 	err = json.Unmarshal(body, &newPart)
-
-	
 
 	if err != nil {
 		panic(err)
@@ -313,48 +306,51 @@ var GetPartsByCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.R
 })
 
 var GetFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+	tempSession := datasource.GetDBSession()
+	defer datasource.CloseDBSession(tempSession)
 	vars := mux.Vars(req)
 	fileID := vars["fileID"]
-	companyID := vars["companyID"]
 
-	loggedInUser, _ := security.ValidateToken(req)
-	if loggedInUser.CompanyID != companyID {
-		// check if user is admin
-		user, _ := datasource.GetUser(loggedInUser.UserID)
-
-		if user.Userlevel != models.Admin {
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte("Unauthorized"))
-			return
-		}
-	}
-
-	file, partFile, err := datasource.GetPartFile(fileID)
-
+	fmt.Println("Open File")
+	file, err := datasource.GetPartFile(fileID, tempSession)
+	fmt.Println("Return File")
 	if err != nil {
 		// file not found
 	}
 
-	var contentType = ""
-	if len(file) <= 512 {
-		contentType = http.DetectContentType(file)
+	//	var contentType = ""
+	//if file.Size() <= 512 {
+	//	fileHeader := make([]byte, file.Size())
+	//	file.Read(fileHeader)
+	//	contentType = http.DetectContentType(fileHeader)
+	//} else {
+	//	fileHeader := make([]byte, 512)
+	//	file.Read(fileHeader)
+	//	contentType = http.DetectContentType(fileHeader)
+	//}
+
+	//Send the file
+
+	//Send the headers
+
+	//w.Header().Set("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
+	//w.Header().Set("Content-Type", contentType)
+	//w.Header().Set("Content-Length", strconv.FormatInt(file.Size(), 10))
+	if w.Header().Get("Content-Disposition") == "" {
+		w.Header().Add("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
 	} else {
-		fileHeader := make([]byte, 512)
-		for i := range fileHeader {
-			fileHeader[i] = file[i]
-		}
-		contentType = http.DetectContentType(fileHeader)
+		w.Header().Set("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
 	}
 
-	fileSize := strconv.FormatInt(int64(binary.Size(file)), 10)
-	//Send the headers
-	w.Header().Set("Content-Disposition", "attachment; filename="+partFile.FileName+"."+partFile.FileExtension)
-	w.Header().Set("Content-Type", contentType)
-	w.Header().Set("Content-Length", fileSize)
-	sendFile := bytes.NewReader(file)
-	//Send the file
-	io.Copy(w, sendFile) //'Copy' the file to the client
+	_, err = io.Copy(w, file) //'Copy' the file to the client
 
+	if err != nil {
+		fmt.Println(err)
+	}
+	err = file.Close()
+	if err != nil {
+		fmt.Println(err)
+	}
 })
 
 var AddFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -374,10 +370,26 @@ var AddFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	fmt.Println("Start to read")
+	if err := req.ParseMultipartForm(5 << 20); err != nil {
+		fmt.Println(err)
+		return
+	}
+
 	for _, fileHeaders := range req.MultipartForm.File {
 		for _, fileHeader := range fileHeaders {
-			file, _ := fileHeader.Open()
-			datasource.SavePartFile(companyID, fileID, fileHeader.Filename, file)
+			fmt.Println("Open")
+			file, err := fileHeader.Open()
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			err = datasource.SavePartFile(companyID, fileID, fileHeader.Filename, file)
+
+			if err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println("Done")
 		}
 
 	}

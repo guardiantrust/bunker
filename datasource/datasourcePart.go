@@ -9,6 +9,7 @@ import (
 	multipart "mime/multipart"
 	"time"
 
+	mgo "gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -147,24 +148,23 @@ func deletePartFile(partID string) error {
 	return err
 }
 
+func check(error error) {
+	if error != nil {
+		fmt.Print(error)
+	}
+}
+
 // GetPartFile - return a file by fileId
-func GetPartFile(fileID string) ([]byte, models.PartFile, error) {
-	tempSession := GetDBSession()
-	defer CloseDBSession(tempSession)
+func GetPartFile(fileID string, tempSession *mgo.Session) (*mgo.GridFile, error) {
+
 	db := tempSession.DB(MongoDatabase)
-	file, _ := db.GridFS("fs").OpenId(IDToObjectID(fileID))
-	var fileSize int
-	fileSize = int(file.Size())
-	returnFile := make([]byte, fileSize)
-	_, err := file.Read(returnFile)
+	file, err := db.GridFS("fs").OpenId(fileID)
 
-	file.Close()
-	coll := tempSession.DB(MongoDatabase).C(PartCollection)
+	check(err)
 
-	var partFile models.PartFile
-	err = coll.Find(bson.M{"fileID": fileID}).One(&partFile)
+	fmt.Println("File Read")
 
-	return returnFile, partFile, err
+	return file, err
 }
 
 // SavePartFile - Save a PartFile to the db
