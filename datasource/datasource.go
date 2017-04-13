@@ -39,6 +39,7 @@ func GetDBSession() *mgo.Session {
 		fmt.Println("Connecting to DB")
 		ConnectDatabase()
 	}
+	fmt.Println("Session Started")
 	return mainSession.Copy()
 }
 
@@ -66,6 +67,8 @@ func GetNewSession() *mgo.Session {
 
 //CloseDBSession - Close the copied Database session
 func CloseDBSession(copiedSession *mgo.Session) {
+
+	fmt.Println("Session Closed")
 	copiedSession.Close()
 }
 

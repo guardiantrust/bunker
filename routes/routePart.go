@@ -336,21 +336,26 @@ var GetFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 	//w.Header().Set("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
 	//w.Header().Set("Content-Type", contentType)
 	//w.Header().Set("Content-Length", strconv.FormatInt(file.Size(), 10))
-	if w.Header().Get("Content-Disposition") == "" {
-		w.Header().Add("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
-	} else {
-		w.Header().Set("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
-	}
+	//if w.Header().Get("Content-Disposition") == "" {
+	//	w.Header().Add("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
+	//} else {
+	//	w.Header().Set("Content-Disposition", "inline; filename=\""+file.Name()+"\"")
+	//}
 
+	//if w.Header().Get("Content-Length") == "" {
+	//	w.Header().Add("Content-Length", strconv.FormatInt(file.Size(), 10))
+	//} else {
+	//		w.Header().Set("Content-Length", strconv.FormatInt(file.Size(), 10))
+	//	}
+	defer file.Close()
 	_, err = io.Copy(w, file) //'Copy' the file to the client
 
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = file.Close()
-	if err != nil {
-		fmt.Println(err)
-	}
+
+	//w.WriteHeader(http.StatusOK)
+	fmt.Println("Done")
 })
 
 var AddFile = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
