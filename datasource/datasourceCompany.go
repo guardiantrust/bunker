@@ -70,6 +70,16 @@ func GetCompany(companyID string) (models.Company, error) {
 	return company, err
 }
 
+// GetCompanies - return all active companies
+func GetCompanies() ([]models.Company, error) {
+	tempSession := GetDBSession()
+	defer CloseDBSession(tempSession)
+	coll := tempSession.DB(MongoDatabase).C(CompanyCollection)
+	var companies []models.Company
+	err := coll.Find(bson.M{"isSuspended": false}).All(&companies)
+	return companies, err
+}
+
 // nameAvailable - Check that a company name is not already saved
 func nameAvailable(companyName string) bool {
 	tempSession := GetDBSession()

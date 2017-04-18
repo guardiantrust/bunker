@@ -5,6 +5,7 @@ import (
 	models "bunker/models"
 	security "bunker/security"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -35,6 +36,23 @@ var GETCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request)
 		w.Write([]byte("Company not found"))
 		return
 	}
+	response, _ := json.Marshal(&company)
+	w.WriteHeader(http.StatusOK)
+	w.Write(response)
+})
+
+// GETAllCompany - Get a company
+var GETAllCompany = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+
+	fmt.Println("Yes!")
+	company, err := datasource.GetCompanies()
+
+	if err != nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Company not found"))
+		return
+	}
+
 	response, _ := json.Marshal(&company)
 	w.WriteHeader(http.StatusOK)
 	w.Write(response)
